@@ -1,7 +1,10 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
+#include <CheapStepper.h>
 
 LiquidCrystal_I2C lcd(0x27, 20, 4); // set the LCD address to 0x27 for a 16 chars and 2 line display
+
+CheapStepper stepper(8, 9, 10, 11); // connect pins 8,9,10,11 to IN1,IN2,IN3,IN4 on ULN2003 board
 
 const int modeBtn_pin = 2;
 int modeBtn_currState, modeBtn_prevState = LOW;
@@ -12,15 +15,17 @@ int plusBtn_currState, plusBtn_prevState = LOW;
 const int setBtn_pin = 4;
 int setBtn_currState, setBtn_prevState = LOW;
 
-int settings_arr[5][3] = {0};
+int arr[5][3] = {0};
 int posPointer = -1;
 bool setFlag = false;
 
 bool HH_state, mm_state, feed_state = false;
 
 unsigned long previousMillis = 0;
-int s = 0;
-bool onTime = false;
+int s = 50;
+
+bool moveClockwise = true;
+int degree = 45; // grados por feeding section
 
 void setup()
 {
@@ -32,34 +37,51 @@ void setup()
 
   lcd.init(); // initialize the lcd
   lcd.backlight();
-  lcd.setCursor(0, 0);
-  lcd.print("Welcome Feeder!");
+  // lcdUpdate();
+
+  stepper.setRpm(12); // initialize RPM
 }
 
 void loop()
 {
-  blink();
+  stepper.run(); // keep running the rest of code
 
-  // Clock
+  blink(); // indica donde esta el cursor
+
+  // Clock running
   unsigned long currentMillis = millis();
   if ((currentMillis - previousMillis) >= 1000) // each 1s
   {
     previousMillis = currentMillis; // prepare for next loop
     s++;
+    // TEMP
+    lcd.setCursor(0, 1);
+    lcd.print(s);
+    // END TEMP
     if (s > 59)
     {
       s = 0;
-      settings_arr[0][1]++; // inc minutes
-      if (settings_arr[0][1] > 59)
+      arr[0][1]++; // inc minutes
+      if (arr[0][1] > 59)
       {
-        settings_arr[0][1] = 0;
-        settings_arr[0][0]++; // inc hours
-        if (settings_arr[0][0] > 23)
+        arr[0][1] = 0;
+        arr[0][0]++; // inc hours
+        if (arr[0][0] > 23)
         {
-          settings_arr[0][0] = 0;
+          arr[0][0] = 0;
         }
       }
       lcdUpdate();
+
+      // Check the feed sections arr
+      for (int i = 1; i < 5; i++)
+      {
+        if ((arr[i][2] > 0) && (arr[0][0] == arr[i][0]) && (arr[0][1] == arr[i][1]))
+        {
+          // Feeding n-times
+          stepper.newMoveDegrees(moveClockwise, degree * arr[i][2]);
+        }
+      }
     }
   }
 
@@ -130,17 +152,17 @@ void loop()
     {
       if (HH_state)
       {
-        settings_arr[posPointer][0] = (settings_arr[posPointer][0] < 23) ? settings_arr[posPointer][0] + 1 : 0;
+        arr[posPointer][0] = (arr[posPointer][0] < 23) ? arr[posPointer][0] + 1 : 0;
         lcdUpdate();
       }
       else if (mm_state)
       {
-        settings_arr[posPointer][1] = (settings_arr[posPointer][1] < 59) ? settings_arr[posPointer][1] + 1 : 0;
+        arr[posPointer][1] = (arr[posPointer][1] < 59) ? arr[posPointer][1] + 1 : 0;
         lcdUpdate();
       }
       else
       {
-        settings_arr[posPointer][2] = (settings_arr[posPointer][2] < 2) ? settings_arr[posPointer][2] + 1 : 0;
+        arr[posPointer][2] = (arr[posPointer][2] < 2) ? arr[posPointer][2] + 1 : 0;
         lcdUpdate();
       }
     }
