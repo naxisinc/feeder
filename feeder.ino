@@ -16,13 +16,13 @@ const int setBtn_pin = 4;
 int setBtn_currState, setBtn_prevState = LOW;
 
 int arr[5][3] = {0};
-int posPointer = -1;
+int posPointer = 0; // default position (current hour view)
 bool setFlag = false;
 
 bool HH_state, mm_state, feed_state = false;
 
 unsigned long previousMillis = 0;
-int s = 50;
+int sec = 0; // seconds
 
 bool moveClockwise = true;
 int degree = 45; // grados por feeding section
@@ -37,7 +37,7 @@ void setup()
 
   lcd.init(); // initialize the lcd
   lcd.backlight();
-  // lcdUpdate();
+  lcdUpdate();
 
   stepper.setRpm(12); // initialize RPM
 }
@@ -53,14 +53,14 @@ void loop()
   if ((currentMillis - previousMillis) >= 1000) // each 1s
   {
     previousMillis = currentMillis; // prepare for next loop
-    s++;
+    sec++;                          // inc seconds
     // TEMP
     lcd.setCursor(0, 1);
-    lcd.print(s);
+    lcd.print(sec);
     // END TEMP
-    if (s > 59)
+    if (sec > 59)
     {
-      s = 0;
+      sec = 0;
       arr[0][1]++; // inc minutes
       if (arr[0][1] > 59)
       {
@@ -71,7 +71,8 @@ void loop()
           arr[0][0] = 0;
         }
       }
-      lcdUpdate();
+
+      lcdUpdate(); // refresh each min.
 
       // Check the feed sections arr
       for (int i = 1; i < 5; i++)
@@ -93,12 +94,13 @@ void loop()
     {
       if (setFlag)
       {
+        // desplazate en la misma section
         if (HH_state)
         {
           HH_state = false;
           mm_state = true;
         }
-        else if (mm_state && posPointer != 0)
+        else if (mm_state && (posPointer != 0))
         {
           mm_state = false;
           feed_state = true;
@@ -112,8 +114,9 @@ void loop()
       }
       else
       {
+        // desplazate a la siguiente section
         posPointer = posPointer < 4 ? posPointer + 1 : 0;
-        lcdUpdate();
+        lcdUpdate(); // refresh
       }
     }
   }
@@ -137,7 +140,8 @@ void loop()
         feed_state = false;
         if (posPointer == 0)
         {
-          s = 0; // reinicio el conteo
+          sec = 0;     // reinicio los segundos
+          lcdUpdate(); // refresh
         }
       }
     }
