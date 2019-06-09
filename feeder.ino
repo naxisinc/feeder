@@ -6,13 +6,16 @@ LiquidCrystal_I2C lcd(0x27, 20, 4); // set the LCD address to 0x27 for a 16 char
 
 CheapStepper stepper(8, 9, 10, 11); // connect pins 8,9,10,11 to IN1,IN2,IN3,IN4 on ULN2003 board
 
-const int modeBtn_pin = 2;
+const int feedBtn_pin = 4;
+int feedBtn_currState, feedBtn_prevState = LOW;
+
+const int modeBtn_pin = 5;
 int modeBtn_currState, modeBtn_prevState = LOW;
 
-const int plusBtn_pin = 3;
+const int plusBtn_pin = 6;
 int plusBtn_currState, plusBtn_prevState = LOW;
 
-const int setBtn_pin = 4;
+const int setBtn_pin = 7;
 int setBtn_currState, setBtn_prevState = LOW;
 
 int arr[5][3] = {0};
@@ -85,6 +88,17 @@ void loop()
       }
     }
   }
+
+  feedBtn_currState = digitalRead(feedBtn_pin);
+  if (feedBtn_currState != feedBtn_prevState)
+  {
+    if (feedBtn_currState == LOW)
+    {
+      // Direct feed
+      stepper.newMoveDegrees(moveClockwise, degree);
+    }
+  }
+  feedBtn_prevState = feedBtn_currState;
 
   // Mode Button
   modeBtn_currState = digitalRead(modeBtn_pin);
