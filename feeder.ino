@@ -3,32 +3,36 @@
 #include <CheapStepper.h>
 
 LiquidCrystal_I2C lcd(0x27, 20, 4); // set the LCD address to 0x27 for a 16 chars and 2 line display
+// // Backlight Time Out
+// const int Time_light = 150;
+// int bl_TO = Time_light; // Backlight Time-Out
 
 CheapStepper stepper(8, 9, 10, 11); // connect pins 8,9,10,11 to IN1,IN2,IN3,IN4 on ULN2003 board
 
 const int feedBtn_pin = 4;
-int feedBtn_currState, feedBtn_prevState = LOW;
+byte feedBtn_currState, feedBtn_prevState = LOW;
 
 const int modeBtn_pin = 5;
-int modeBtn_currState, modeBtn_prevState = LOW;
+byte modeBtn_currState, modeBtn_prevState = LOW;
 
 const int plusBtn_pin = 6;
-int plusBtn_currState, plusBtn_prevState = LOW;
+byte plusBtn_currState, plusBtn_prevState = LOW;
 
 const int setBtn_pin = 7;
-int setBtn_currState, setBtn_prevState = LOW;
+byte setBtn_currState, setBtn_prevState = LOW;
 
-int arr[5][3] = {0};
-int posPointer = 0; // default position (current hour view)
+byte arr[5][3] = {0};
+byte posPointer = 0; // default position (current hour view)
 bool setFlag = false;
 
 bool HH_state, mm_state, feed_state = false;
 
 unsigned long previousMillis = 0;
-int sec = 0; // seconds
+bool timeSetFlag = false;
+byte sec = 0; // seconds
 
 bool moveClockwise = true;
-int degree = 45; // grados por feeding section
+byte degree = 45; // grados por feeding section
 
 void setup()
 {
@@ -47,13 +51,21 @@ void setup()
 
 void loop()
 {
-  stepper.run(); // keep running the rest of code
+  stepper.run();                          // keep running the rest of code
+  int stepsLeft = stepper.getStepsLeft(); // let's check how many steps are left in the current move:
+  if (stepsLeft == 0)                     // if the current move is done...
+  {
+    digitalWrite(8, LOW);
+    digitalWrite(9, LOW);
+    digitalWrite(10, LOW);
+    digitalWrite(11, LOW);
+  }
 
   blink(); // indica donde esta el cursor
 
   // Clock running
   unsigned long currentMillis = millis();
-  if ((currentMillis - previousMillis) >= 1000) // each 1s
+  if (((currentMillis - previousMillis) > 1000UL) && timeSetFlag) // each 1s
   {
     previousMillis = currentMillis; // prepare for next loop
     sec++;                          // inc seconds
@@ -97,6 +109,7 @@ void loop()
       // Direct feed
       stepper.newMoveDegrees(moveClockwise, degree);
     }
+    lcd.noBacklight();
   }
   feedBtn_prevState = feedBtn_currState;
 
@@ -154,8 +167,7 @@ void loop()
         feed_state = false;
         if (posPointer == 0)
         {
-          sec = 0;     // reinicio los segundos
-          lcdUpdate(); // refresh
+          timeSetFlag = true; // comienza a contar el tiempo
         }
       }
     }
