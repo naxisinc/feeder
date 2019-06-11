@@ -27,18 +27,45 @@ bool setFlag = false;
 
 bool HH_state, mm_state, feed_state = false;
 
-unsigned long previousMillis = 0;
+// TIMER
+// Counter and compare values
+const uint16_t t1_load = 0;
+const uint16_t t1_comp = 62500; // 62500 pulse = 1s for a 16MHz Crystal
+
 bool timeSetFlag = false;
-byte sec = 0; // seconds
+byte seconds = 0; // seconds
 
 bool moveClockwise = true;
 byte degree = 45; // grados por feeding section
 
 void setup()
 {
-  pinMode(setBtn_pin, INPUT);
+  pinMode(feedBtn_pin, INPUT);
   pinMode(plusBtn_pin, INPUT);
   pinMode(modeBtn_pin, INPUT);
+  pinMode(setBtn_pin, INPUT);
+
+  // Reset Timer1 Control Reg. A
+  TCCR1A = 0;
+
+  // Set CTC mode
+  TCCR1B &= ~(1 << WGM13);
+  TCCR1B |= (1 << WGM12);
+
+  // Set prescaler of 256
+  TCCR1B |= (1 << CS12);
+  TCCR1B &= ~(1 << CS11);
+  TCCR1B &= ~(1 << CS10);
+
+  // Reset Timer1 and set compare value
+  TCNT1 = t1_load;
+  OCR1A = t1_comp;
+
+  // Enable Timer1 compare interrupt
+  TIMSK1 = (1 << OCIE1A);
+
+  // Enable global interrupts
+  sei();
 
   Serial.begin(115200);
 
@@ -51,7 +78,8 @@ void setup()
 
 void loop()
 {
-  stepper.run();                          // keep running the rest of code
+  stepper.run(); // keep running the rest of code
+
   int stepsLeft = stepper.getStepsLeft(); // let's check how many steps are left in the current move:
   if (stepsLeft == 0)                     // if the current move is done...
   {
@@ -63,44 +91,6 @@ void loop()
 
   blink(); // indica donde esta el cursor
 
-  // Clock running
-  unsigned long currentMillis = millis();
-  if (((currentMillis - previousMillis) > 1000UL) && timeSetFlag) // each 1s
-  {
-    previousMillis = currentMillis; // prepare for next loop
-    sec++;                          // inc seconds
-    // TEMP
-    lcd.setCursor(0, 1);
-    lcd.print(sec);
-    // END TEMP
-    if (sec > 59)
-    {
-      sec = 0;
-      arr[0][1]++; // inc minutes
-      if (arr[0][1] > 59)
-      {
-        arr[0][1] = 0;
-        arr[0][0]++; // inc hours
-        if (arr[0][0] > 23)
-        {
-          arr[0][0] = 0;
-        }
-      }
-
-      lcdUpdate(); // refresh each min.
-
-      // Check the feed sections arr
-      for (int i = 1; i < 5; i++)
-      {
-        if ((arr[i][2] > 0) && (arr[0][0] == arr[i][0]) && (arr[0][1] == arr[i][1]))
-        {
-          // Feeding n-times
-          stepper.newMoveDegrees(moveClockwise, degree * arr[i][2]);
-        }
-      }
-    }
-  }
-
   feedBtn_currState = digitalRead(feedBtn_pin);
   if (feedBtn_currState != feedBtn_prevState)
   {
@@ -109,7 +99,7 @@ void loop()
       // Direct feed
       stepper.newMoveDegrees(moveClockwise, degree);
     }
-    lcd.noBacklight();
+    // lcd.noBacklight();
   }
   feedBtn_prevState = feedBtn_currState;
 

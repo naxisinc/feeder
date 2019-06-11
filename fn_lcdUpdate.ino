@@ -13,13 +13,10 @@ void lcdUpdate()
   }
 
   // Hour
+  lcd.setCursor(4, 1);
   if (arr[posPointer][0] < 10)
   {
-    lcd.setCursor(12, 1);
-  }
-  else
-  {
-    lcd.setCursor(11, 1);
+    lcd.print("0");
   }
   lcd.print(arr[posPointer][0]);
   lcd.print(":");
@@ -30,4 +27,5 @@ void lcdUpdate()
     lcd.print("0");
   }
   lcd.print(arr[posPointer][1]);
+  lcd.print(":00");
 }

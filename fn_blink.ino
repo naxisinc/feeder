@@ -2,7 +2,9 @@ void blink()
 {
   if ((posPointer == 0) && (!HH_state && !mm_state && !feed_state))
   {
-    lcd.setCursor(13, 1);
+    // lcd.setCursor(13, 1);
+    lcd.noBlink();
+    return;
   }
   else if ((posPointer != 0) && (!HH_state && !mm_state && !feed_state))
   {
@@ -11,11 +13,11 @@ void blink()
   }
   else if (HH_state)
   {
-    lcd.setCursor(12, 1);
+    lcd.setCursor(5, 1);
   }
   else if (mm_state)
   {
-    lcd.setCursor(15, 1);
+    lcd.setCursor(8, 1);
   }
   else if (feed_state)
   {
