@@ -38,11 +38,13 @@ byte seconds = 0; // seconds
 bool moveClockwise = true;
 byte degree = 45; // grados por feeding section
 
+bool flag = false;
+
 void setup()
 {
   pinMode(feedBtn_pin, INPUT);
-  pinMode(plusBtn_pin, INPUT);
   pinMode(modeBtn_pin, INPUT);
+  pinMode(plusBtn_pin, INPUT);
   pinMode(setBtn_pin, INPUT);
 
   // Reset Timer1 Control Reg. A
@@ -69,9 +71,9 @@ void setup()
 
   Serial.begin(115200);
 
-  lcd.init(); // initialize the lcd
-  lcd.backlight();
-  lcdUpdate();
+  lcd.init();      // initialize the lcd
+  lcd.backlight(); // turn on the LED
+  lcdUpdate();     // refresh
 
   stepper.setRpm(12); // initialize RPM
 }
@@ -188,4 +190,35 @@ void loop()
     }
   }
   plusBtn_prevState = plusBtn_currState;
+
+  // Hour
+  if (flag)
+  {
+    // lcd.clear();
+    lcd.setCursor(4, 1);
+    if (arr[posPointer][0] < 10)
+    {
+      lcd.print("0");
+    }
+    lcd.print(arr[posPointer][0]);
+    lcd.print(":");
+
+    lcd.setCursor(7, 1);
+    // Minutes
+    if (arr[posPointer][1] < 10)
+    {
+      lcd.print("0");
+    }
+    lcd.print(arr[posPointer][1]);
+    lcd.print(":");
+
+    lcd.setCursor(10, 1);
+    // Seconds
+    if (seconds < 10)
+    {
+      lcd.print("0");
+    }
+    lcd.print(seconds);
+  }
+  flag = false;
 }
