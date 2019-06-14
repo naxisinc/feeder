@@ -38,7 +38,7 @@ byte seconds = 0; // seconds
 bool moveClockwise = true;
 byte degree = 45; // grados por feeding section
 
-bool flag = false;
+bool flag = false; // para actualizar el lcd x segundo
 
 void setup()
 {
@@ -73,7 +73,7 @@ void setup()
 
   lcd.init();      // initialize the lcd
   lcd.backlight(); // turn on the LED
-  lcdUpdate();     // refresh
+  lcdInit();       // setting data on lcd
 
   stepper.setRpm(12); // initialize RPM
 }
@@ -101,7 +101,6 @@ void loop()
       // Direct feed
       stepper.newMoveDegrees(moveClockwise, degree);
     }
-    // lcd.noBacklight();
   }
   feedBtn_prevState = feedBtn_currState;
 
@@ -174,46 +173,57 @@ void loop()
     {
       if (HH_state)
       {
+        // Hour
         arr[posPointer][0] = (arr[posPointer][0] < 23) ? arr[posPointer][0] + 1 : 0;
-        lcdUpdate();
+        lcd.setCursor(4, 1);
+        if (arr[posPointer][0] < 10)
+        {
+          lcd.print("0");
+        }
+        lcd.print(arr[posPointer][0]);
       }
       else if (mm_state)
       {
+        // Minutes
         arr[posPointer][1] = (arr[posPointer][1] < 59) ? arr[posPointer][1] + 1 : 0;
-        lcdUpdate();
+        lcd.setCursor(7, 1);
+        if (arr[posPointer][1] < 10)
+        {
+          lcd.print("0");
+        }
+        lcd.print(arr[posPointer][1]);
       }
       else
       {
+        // Qty of rotations
         arr[posPointer][2] = (arr[posPointer][2] < 2) ? arr[posPointer][2] + 1 : 0;
-        lcdUpdate();
+        lcd.setCursor(15, 0);
+        lcd.print(arr[posPointer][2]);
       }
     }
   }
   plusBtn_prevState = plusBtn_currState;
 
-  // Hour
+  // each second
   if (flag)
   {
-    // lcd.clear();
     lcd.setCursor(4, 1);
     if (arr[posPointer][0] < 10)
     {
       lcd.print("0");
     }
     lcd.print(arr[posPointer][0]);
-    lcd.print(":");
 
-    lcd.setCursor(7, 1);
     // Minutes
+    lcd.setCursor(7, 1);
     if (arr[posPointer][1] < 10)
     {
       lcd.print("0");
     }
     lcd.print(arr[posPointer][1]);
-    lcd.print(":");
 
-    lcd.setCursor(10, 1);
     // Seconds
+    lcd.setCursor(10, 1);
     if (seconds < 10)
     {
       lcd.print("0");
