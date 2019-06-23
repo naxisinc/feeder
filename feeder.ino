@@ -30,15 +30,13 @@ bool HH_state, mm_state, feed_state = false;
 // TIMER
 // Counter and compare values
 const uint16_t t1_load = 0;
-const uint16_t t1_comp = 62500; // 62500 pulse = 1s for a 16MHz Crystal
+const uint16_t t1_comp = 62499; // 62500 timer counts = 1s for a 16MHz Crystal
 
 bool timeSetFlag = false;
 byte seconds = 0; // seconds
 
 bool moveClockwise = true;
-byte degree = 45; // grados por feeding section
-
-bool flag = false; // para actualizar el lcd x segundo
+byte degree = 360; // grados por feeding section
 
 void setup()
 {
@@ -47,10 +45,13 @@ void setup()
   pinMode(plusBtn_pin, INPUT);
   pinMode(setBtn_pin, INPUT);
 
+  // setup timer interrupt
+  cli(); //disable global interrupts
+
   // Reset Timer1 Control Reg. A
   TCCR1A = 0;
 
-  // Set CTC mode
+  // Set CTC mode for auto reset to 0 when the compare is reach
   TCCR1B &= ~(1 << WGM13);
   TCCR1B |= (1 << WGM12);
 
@@ -69,13 +70,13 @@ void setup()
   // Enable global interrupts
   sei();
 
-  Serial.begin(115200);
+  // Serial.begin(115200);
 
   lcd.init();      // initialize the lcd
   lcd.backlight(); // turn on the LED
   lcdInit();       // setting data on lcd
 
-  stepper.setRpm(12); // initialize RPM
+  stepper.setRpm(22); // initialize RPM
 }
 
 void loop()
@@ -204,31 +205,21 @@ void loop()
   }
   plusBtn_prevState = plusBtn_currState;
 
-  // each second
-  if (flag)
+  // Show the time in LCD
+  // lcd.setCursor(4, 1);
+  lcd.setCursor(11, 1);
+  if (arr[0][0] < 10)
   {
-    lcd.setCursor(4, 1);
-    if (arr[posPointer][0] < 10)
-    {
-      lcd.print("0");
-    }
-    lcd.print(arr[posPointer][0]);
-
-    // Minutes
-    lcd.setCursor(7, 1);
-    if (arr[posPointer][1] < 10)
-    {
-      lcd.print("0");
-    }
-    lcd.print(arr[posPointer][1]);
-
-    // Seconds
-    lcd.setCursor(10, 1);
-    if (seconds < 10)
-    {
-      lcd.print("0");
-    }
-    lcd.print(seconds);
+    lcd.print("0");
   }
-  flag = false;
+  lcd.print(arr[0][0]);
+
+  // Minutes
+  // lcd.setCursor(7, 1);
+  lcd.setCursor(14, 1);
+  if (arr[0][1] < 10)
+  {
+    lcd.print("0");
+  }
+  lcd.print(arr[0][1]);
 }

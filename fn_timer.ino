@@ -1,8 +1,8 @@
 ISR(TIMER1_COMPA_vect)
 {
+  Serial.println(millis());
   if (timeSetFlag)
   {
-    flag = true;
     seconds++;
     if (seconds > 59)
     {
@@ -28,10 +28,5 @@ ISR(TIMER1_COMPA_vect)
         }
       }
     }
-    Serial.print(arr[0][0]);
-    Serial.print(":");
-    Serial.print(arr[0][1]);
-    Serial.print(":");
-    Serial.println(seconds);
   }
 }
