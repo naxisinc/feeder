@@ -3,9 +3,9 @@
 #include <CheapStepper.h>
 
 LiquidCrystal_I2C lcd(0x27, 20, 4); // set the LCD address to 0x27 for a 16 chars and 2 line display
-// // Backlight Time Out
-// const int Time_light = 150;
-// int bl_TO = Time_light; // Backlight Time-Out
+// Backlight Time Out
+unsigned long backlightTimeOut;
+const int interval = 15000; // 15 sec. on
 
 CheapStepper stepper(8, 9, 10, 11); // connect pins 8,9,10,11 to IN1,IN2,IN3,IN4 on ULN2003 board
 
@@ -38,12 +38,18 @@ byte seconds = 0; // seconds
 bool moveClockwise = true;
 byte degree = 360; // grados por feeding section
 
+bool goneFlag = false; // saber si paso un segundo para refresh the LCD
+
+const byte led_pin = PB5; // just for testing purpose.
+
 void setup()
 {
   pinMode(feedBtn_pin, INPUT);
   pinMode(modeBtn_pin, INPUT);
   pinMode(plusBtn_pin, INPUT);
   pinMode(setBtn_pin, INPUT);
+
+  DDRB |= (1 << led_pin);
 
   // setup timer interrupt
   cli(); //disable global interrupts
@@ -74,13 +80,20 @@ void setup()
 
   lcd.init();      // initialize the lcd
   lcd.backlight(); // turn on the LED
-  lcdInit();       // setting data on lcd
+  backlightTimeOut = millis();
+  lcdInit(); // setting data on lcd
 
-  stepper.setRpm(22); // initialize RPM
+  stepper.setRpm(12); // initialize RPM
 }
 
 void loop()
 {
+  // Apagando el backlight del LCD
+  if ((millis() - backlightTimeOut) > interval)
+  {
+    lcd.noBacklight(); // turn off backlight
+  }
+
   stepper.run(); // keep running the rest of code
 
   int stepsLeft = stepper.getStepsLeft(); // let's check how many steps are left in the current move:
@@ -111,6 +124,7 @@ void loop()
   {
     if (modeBtn_currState == LOW)
     {
+      backlight_TurnOn();
       if (setFlag)
       {
         // desplazate en la misma section
@@ -135,7 +149,7 @@ void loop()
       {
         // desplazate a la siguiente section
         posPointer = posPointer < 4 ? posPointer + 1 : 0;
-        lcdUpdate(); // refresh
+        lcdUpdate();
       }
     }
   }
@@ -147,6 +161,7 @@ void loop()
   {
     if (setBtn_currState == LOW)
     {
+      backlight_TurnOn();
       setFlag = !setFlag;
       if (setFlag)
       {
@@ -172,26 +187,23 @@ void loop()
   {
     if (plusBtn_currState == LOW)
     {
+      backlight_TurnOn();
       if (HH_state)
       {
         // Hour
         arr[posPointer][0] = (arr[posPointer][0] < 23) ? arr[posPointer][0] + 1 : 0;
-        lcd.setCursor(4, 1);
+        lcd.setCursor(11, 1);
         if (arr[posPointer][0] < 10)
-        {
           lcd.print("0");
-        }
         lcd.print(arr[posPointer][0]);
       }
       else if (mm_state)
       {
         // Minutes
         arr[posPointer][1] = (arr[posPointer][1] < 59) ? arr[posPointer][1] + 1 : 0;
-        lcd.setCursor(7, 1);
+        lcd.setCursor(14, 1);
         if (arr[posPointer][1] < 10)
-        {
           lcd.print("0");
-        }
         lcd.print(arr[posPointer][1]);
       }
       else
@@ -205,21 +217,9 @@ void loop()
   }
   plusBtn_prevState = plusBtn_currState;
 
-  // Show the time in LCD
-  // lcd.setCursor(4, 1);
-  lcd.setCursor(11, 1);
-  if (arr[0][0] < 10)
+  if (goneFlag)
   {
-    lcd.print("0");
+    lcdUpdate();
+    goneFlag = false;
   }
-  lcd.print(arr[0][0]);
-
-  // Minutes
-  // lcd.setCursor(7, 1);
-  lcd.setCursor(14, 1);
-  if (arr[0][1] < 10)
-  {
-    lcd.print("0");
-  }
-  lcd.print(arr[0][1]);
 }

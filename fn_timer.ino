@@ -1,6 +1,7 @@
 ISR(TIMER1_COMPA_vect)
 {
-  Serial.println(millis());
+  // Serial.println(millis());
+  PORTB ^= (1 << led_pin);
   if (timeSetFlag)
   {
     seconds++;
@@ -27,6 +28,9 @@ ISR(TIMER1_COMPA_vect)
           stepper.newMoveDegrees(moveClockwise, degree * arr[i][2]);
         }
       }
+
+      // indica q debe ser refresh el display
+      goneFlag = true;
     }
   }
 }
