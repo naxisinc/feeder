@@ -30,7 +30,8 @@ bool HH_state, mm_state, feed_state = false;
 // TIMER
 // Counter and compare values
 const uint16_t t1_load = 0;
-const uint16_t t1_comp = 62499; // 62500 timer counts = 1s for a 16MHz Crystal
+// const uint16_t t1_comp = 62499; // for a 16MHz Crystal
+const uint16_t t1_comp = 63999; // for a 16.384MHZ Crystal
 
 bool timeSetFlag = false;
 byte seconds = 0; // seconds
