@@ -1,6 +1,7 @@
 {
-    "port": "COM4",
-    "board": "arduino:avr:uno",
-    "programmer": "AVR ISP",
-    "sketch": "feeder.ino"
+    "port": "COM3",
+    "board": "MiniCore:avr:328",
+    "programmer": "Arduino as ISP",
+    "sketch": "feeder.ino",
+    "configuration": "bootloader=no_bootloader,variant=modelPB,BOD=disabled,LTO=Os_flto,clock=16MHz_external"
 }

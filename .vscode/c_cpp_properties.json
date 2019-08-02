@@ -3,12 +3,11 @@
         {
             "name": "Win32",
             "includePath": [
+                "C:\\Users\\ianphill\\AppData\\Local\\Arduino15\\packages\\MiniCore\\hardware\\avr\\2.0.3\\**",
                 "C:\\\\Program Files (x86)\\\\Arduino\\\\tools\\\\**",
                 "C:\\\\Program Files (x86)\\\\Arduino\\\\hardware\\\\arduino\\\\avr\\\\**"
             ],
-            "forcedInclude": [
-                "C:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\cores\\arduino\\Arduino.h"
-            ],
+            "forcedInclude": [],
             "intelliSenseMode": "msvc-x64"
         }
     ],

@@ -2,6 +2,11 @@
 #include <LiquidCrystal_I2C.h>
 #include <CheapStepper.h>
 
+#ifdef F_CPU
+#undef F_CPU
+#define F_CPU 16000000L
+#endif
+
 LiquidCrystal_I2C lcd(0x27, 20, 4); // set the LCD address to 0x27 for a 16 chars and 2 line display
 // Backlight Time Out
 unsigned long backlightTimeOut;
@@ -21,8 +26,8 @@ byte plusBtn_currState, plusBtn_prevState = LOW;
 const int setBtn_pin = 7;
 byte setBtn_currState, setBtn_prevState = LOW;
 
-byte arr[5][3] = {0};
-byte posPointer = 0; // default position (current hour view)
+byte arr[5][3] = {0}; // row; col
+byte posPointer = 0;  // default position (current hour view)
 bool setFlag = false;
 
 bool HH_state, mm_state, feed_state = false;
@@ -30,8 +35,7 @@ bool HH_state, mm_state, feed_state = false;
 // TIMER
 // Counter and compare values
 const uint16_t t1_load = 0;
-// const uint16_t t1_comp = 62499; // for a 16MHz Crystal
-const uint16_t t1_comp = 63999; // for a 16.384MHZ Crystal
+const uint16_t t1_comp = 62499; // for a 16 MHz Crystal. 256 prescler
 
 bool timeSetFlag = false;
 byte seconds = 0; // seconds
@@ -45,12 +49,14 @@ const byte led_pin = PB5; // just for testing purpose.
 
 void setup()
 {
-  pinMode(feedBtn_pin, INPUT);
-  pinMode(modeBtn_pin, INPUT);
-  pinMode(plusBtn_pin, INPUT);
-  pinMode(setBtn_pin, INPUT);
-
-  DDRB |= (1 << led_pin);
+  // Save power setting all IO pins to LOW
+  for (int i = 0; i < 20; i++)
+  {
+    if (i != 4 || i != 5 || i != 6 || i != 7) // input pins of the buttons
+    {
+      pinMode(i, OUTPUT);
+    }
+  }
 
   // setup timer interrupt
   cli(); //disable global interrupts
@@ -95,7 +101,7 @@ void loop()
     lcd.noBacklight(); // turn off backlight
   }
 
-  stepper.run(); // keep running the rest of code
+  stepper.run(); // keep running the rest of code while motor is rotating
 
   int stepsLeft = stepper.getStepsLeft(); // let's check how many steps are left in the current move:
   if (stepsLeft == 0)                     // if the current move is done...

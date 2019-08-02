@@ -1,6 +1,7 @@
 void lcdInit()
 {
-  lcd.setCursor(11, 1);
+  // lcd.setCursor(11, 1);
+  lcd.setCursor(4, 1);
   lcd.print("00:00");
 }
 
@@ -22,7 +23,8 @@ void lcdUpdate()
   }
 
   // Hour
-  lcd.setCursor(11, 1);
+  // lcd.setCursor(11, 1);
+  lcd.setCursor(4, 1);
   if (arr[posPointer][0] < 10)
   {
     lcd.print("0");
@@ -30,7 +32,8 @@ void lcdUpdate()
   lcd.print(arr[posPointer][0]);
 
   // Minutes
-  lcd.setCursor(14, 1);
+  // lcd.setCursor(14, 1);
+  lcd.setCursor(7, 1);
   if (arr[posPointer][1] < 10)
   {
     lcd.print("0");
