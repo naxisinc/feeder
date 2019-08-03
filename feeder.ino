@@ -45,7 +45,7 @@ byte degree = 360; // grados por feeding section
 
 bool goneFlag = false; // saber si paso un segundo para refresh the LCD
 
-const byte led_pin = PB5; // just for testing purpose.
+// const byte led_pin = PB5; // just for testing purpose.
 
 void setup()
 {
@@ -83,8 +83,6 @@ void setup()
   // Enable global interrupts
   sei();
 
-  // Serial.begin(115200);
-
   lcd.init();      // initialize the lcd
   lcd.backlight(); // turn on the LED
   backlightTimeOut = millis();
@@ -106,13 +104,13 @@ void loop()
   int stepsLeft = stepper.getStepsLeft(); // let's check how many steps are left in the current move:
   if (stepsLeft == 0)                     // if the current move is done...
   {
-    digitalWrite(8, LOW);
-    digitalWrite(9, LOW);
-    digitalWrite(10, LOW);
-    digitalWrite(11, LOW);
+    // Set stepper motor pins to LOW
+    for (int i = 8; i < 12; i++)
+      digitalWrite(i, LOW);
   }
 
-  blink(); // indica donde esta el cursor
+  if (timeSetFlag)
+    blink(); // indica donde esta el cursor
 
   feedBtn_currState = digitalRead(feedBtn_pin);
   if (feedBtn_currState != feedBtn_prevState)

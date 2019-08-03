@@ -1,5 +1,5 @@
 {
-    "port": "COM3",
+    "port": "COM4",
     "board": "MiniCore:avr:328",
     "programmer": "Arduino as ISP",
     "sketch": "feeder.ino",
