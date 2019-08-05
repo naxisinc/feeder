@@ -1,6 +1,7 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <CheapStepper.h>
+#include <EEPROM.h>
 
 #ifdef F_CPU
 #undef F_CPU
@@ -89,6 +90,15 @@ void setup()
   lcdInit(); // setting data on lcd
 
   stepper.setRpm(12); // initialize RPM
+
+  /* Reading the EEPROM */
+  for (byte i = 0; i < 12; i++)
+  {
+    if (EEPROM.read(i) != 255)
+    {
+      //
+    }
+  }
 }
 
 void loop()
@@ -177,9 +187,22 @@ void loop()
         HH_state = false;
         mm_state = false;
         feed_state = false;
+        /* Si lo que fijo fue la hora del dispositivo */
         if (posPointer == 0)
         {
           timeSetFlag = true; // comienza a contar el tiempo
+        }
+        /* Sino, entonces lo que fijo fue un feed time */
+        else
+        {
+          // escribo la EEPROM solo si feed_value != 0
+          if (arr[posPointer][2] != 0)
+          {
+            byte pos = 0;                              // position in arr array
+            byte start_address = (posPointer - 1) * 3; // byte donde comenzare a escribir
+            for (int i = start_add; i < start_address + 3; i++)
+              EEPROM.write(i, arr[posPointer][pos++]);
+          }
         }
       }
     }
