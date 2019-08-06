@@ -1,0 +1,69 @@
+Change Component Comment : Designator=J1 Old Comment=Header 5 New Comment=SteperMotor_Conn
+Added Component: Designator=C1(RB7.6-15)
+Added Component: Designator=C2(RAD-0.3)
+Added Component: Designator=J2(HDR1X4)
+Added Component: Designator=VR1(D2PAK_N)
+Added Pin To Net: NetName=GND Pin=C1-2
+Added Pin To Net: NetName=GND Pin=C2-1
+Added Pin To Net: NetName=VCC Pin=C2-2
+Added Pin To Net: NetName=VCC Pin=J1-1
+Added Pin To Net: NetName=GND Pin=J2-1
+Added Pin To Net: NetName=VCC Pin=J2-2
+Added Pin To Net: NetName=GND Pin=U1-8
+Added Pin To Net: NetName=VCC Pin=U1-9
+Added Pin To Net: NetName=GND Pin=VR1-2
+Added Pin To Net: NetName=VCC Pin=VR1-3
+Change Net Name : Old Net Name=BTN_FEED New Net Name=NETFEED
+Change Net Name : Old Net Name=NetICSP_1 New Net Name=MISO
+Change Net Name : Old Net Name=NetICSP_2 New Net Name=SCK
+Change Net Name : Old Net Name=NetICSP_3 New Net Name=RESET
+Added Pin To Net: NetName=IN1 Pin=U0-12
+Added Pin To Net: NetName=IN1 Pin=U1-1
+Added Net: Name=IN1
+Added Pin To Net: NetName=IN2 Pin=U0-13
+Added Pin To Net: NetName=IN2 Pin=U1-2
+Added Net: Name=IN2
+Added Pin To Net: NetName=IN3 Pin=U0-14
+Added Pin To Net: NetName=IN3 Pin=U1-3
+Added Net: Name=IN3
+Added Pin To Net: NetName=MOSI/IN4 Pin=ICSP-5
+Added Pin To Net: NetName=MOSI/IN4 Pin=U0-15
+Added Pin To Net: NetName=MOSI/IN4 Pin=U1-4
+Added Net: Name=MOSI/IN4
+Added Pin To Net: NetName=NetC1_1 Pin=C1-1
+Added Pin To Net: NetName=NetC1_1 Pin=VR1-1
+Added Net: Name=NetC1_1
+Added Pin To Net: NetName=NetJ1_2 Pin=J1-2
+Added Pin To Net: NetName=NetJ1_2 Pin=U1-16
+Added Net: Name=NetJ1_2
+Added Pin To Net: NetName=NetJ1_3 Pin=J1-3
+Added Pin To Net: NetName=NetJ1_3 Pin=U1-15
+Added Net: Name=NetJ1_3
+Added Pin To Net: NetName=NetJ1_4 Pin=J1-4
+Added Pin To Net: NetName=NetJ1_4 Pin=U1-14
+Added Net: Name=NetJ1_4
+Added Pin To Net: NetName=NetJ1_5 Pin=J1-5
+Added Pin To Net: NetName=NetJ1_5 Pin=U1-13
+Added Net: Name=NetJ1_5
+Added Pin To Net: NetName=NETMODE Pin=btn_mode-1
+Added Pin To Net: NetName=NETMODE Pin=R2-1
+Added Pin To Net: NetName=NETMODE Pin=U0-9
+Added Net: Name=NETMODE
+Added Pin To Net: NetName=NETPLUS Pin=btn_plus-1
+Added Pin To Net: NetName=NETPLUS Pin=R3-1
+Added Pin To Net: NetName=NETPLUS Pin=U0-10
+Added Net: Name=NETPLUS
+Added Pin To Net: NetName=NETSET Pin=btn_set-1
+Added Pin To Net: NetName=NETSET Pin=R4-1
+Added Pin To Net: NetName=NETSET Pin=U0-11
+Added Net: Name=NETSET
+Added Pin To Net: NetName=SCL Pin=J2-4
+Added Pin To Net: NetName=SCL Pin=U0-28
+Added Net: Name=SCL
+Added Pin To Net: NetName=SDA Pin=J2-3
+Added Pin To Net: NetName=SDA Pin=U0-27
+Added Net: Name=SDA
+Added Member To Class: ClassName=feeder Member=Component C1 Cap Pol1
+Added Member To Class: ClassName=feeder Member=Component C2 Cap
+Added Member To Class: ClassName=feeder Member=Component J2 LCD_Conn
+Added Member To Class: ClassName=feeder Member=Component VR1 7805

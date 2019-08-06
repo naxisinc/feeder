@@ -1,0 +1,15 @@
+Removed Pin From Net: NetName=MISO Pin=ICSP-1
+Removed Pin From Net: NetName=SCK Pin=ICSP-2
+Removed Pin From Net: NetName=RESET Pin=ICSP-3
+Removed Pin From Net: NetName=VCC Pin=ICSP-4
+Removed Pin From Net: NetName=MOSI/IN4 Pin=ICSP-5
+Removed Pin From Net: NetName=GND Pin=ICSP-6
+Removed Member From Class: ClassName=feeder Member=ICSP
+Added Component: Designator=ISCP(HDR2X3)
+Added Pin To Net: NetName=MISO Pin=ISCP-1
+Added Pin To Net: NetName=VCC Pin=ISCP-2
+Added Pin To Net: NetName=SCK Pin=ISCP-3
+Added Pin To Net: NetName=MOSI/IN4 Pin=ISCP-4
+Added Pin To Net: NetName=RESET Pin=ISCP-5
+Added Pin To Net: NetName=GND Pin=ISCP-6
+Added Member To Class: ClassName=feeder Member=Component ISCP Header 3X2

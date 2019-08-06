@@ -1,0 +1,6 @@
+Removed Pin From Net: NetName=VCC Pin=C5-2
+Removed Pin From Net: NetName=VCC Pin=C6-2
+Removed Pin From Net: NetName=VCC Pin=C7-2
+Removed Pin From Net: NetName=VCC Pin=C8-2
+Added Pin To Net: NetName=NETFEED Pin=C5-2
+Added Room: Name=feeder

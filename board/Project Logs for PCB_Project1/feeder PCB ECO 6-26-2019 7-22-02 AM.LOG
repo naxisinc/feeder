@@ -1,0 +1,3 @@
+Added Pin To Net: NetName=VCC Pin=S?-1
+Added Pin To Net: NetName=GND Pin=S?-2
+Added Room: Name=feeder

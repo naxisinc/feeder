@@ -1,0 +1,5 @@
+Change Component Footprint: Designator=in Old Footprint=HDR1X2 New Footprint=2Pin_terminalBlock_200
+Change Component Designator: OldDesignator=in NewDesignator=9V input
+Added Member To Class: ClassName=feeder Member=Component C7 Cap
+Added Member To Class: ClassName=feeder Member=Component C8 Cap
+Added Room: Name=feeder

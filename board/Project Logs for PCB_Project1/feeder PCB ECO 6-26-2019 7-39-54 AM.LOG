@@ -1,0 +1,38 @@
+Removed Pin From Net: NetName=VCC Pin=S?-1
+Removed Pin From Net: NetName=GND Pin=S?-2
+Change Component Designator: OldDesignator=S? NewDesignator=btn_feed
+Added Component: Designator=btn_mode(BUTTON)
+Added Component: Designator=btn_plus(BUTTON)
+Added Component: Designator=btn_set(BUTTON)
+Added Component: Designator=R1(AXIAL-0.3)
+Added Component: Designator=R2(AXIAL-0.3)
+Added Component: Designator=R3(AXIAL-0.3)
+Added Component: Designator=R4(AXIAL-0.3)
+Added Pin To Net: NetName=VCC Pin=btn_feed-2
+Added Pin To Net: NetName=VCC Pin=btn_mode-2
+Added Pin To Net: NetName=VCC Pin=btn_plus-2
+Added Pin To Net: NetName=VCC Pin=btn_set-2
+Added Pin To Net: NetName=GND Pin=R1-2
+Added Pin To Net: NetName=GND Pin=R2-2
+Added Pin To Net: NetName=GND Pin=R3-2
+Added Pin To Net: NetName=GND Pin=R4-2
+Added Pin To Net: NetName=BTN_FEED Pin=btn_feed-1
+Added Pin To Net: NetName=BTN_FEED Pin=R1-1
+Added Pin To Net: NetName=BTN_FEED Pin=U0-2
+Added Net: Name=BTN_FEED
+Added Pin To Net: NetName=Netbtn_mode_1 Pin=btn_mode-1
+Added Pin To Net: NetName=Netbtn_mode_1 Pin=R2-1
+Added Net: Name=Netbtn_mode_1
+Added Pin To Net: NetName=Netbtn_plus_1 Pin=btn_plus-1
+Added Pin To Net: NetName=Netbtn_plus_1 Pin=R3-1
+Added Net: Name=Netbtn_plus_1
+Added Pin To Net: NetName=Netbtn_set_1 Pin=btn_set-1
+Added Pin To Net: NetName=Netbtn_set_1 Pin=R4-1
+Added Net: Name=Netbtn_set_1
+Added Member To Class: ClassName=feeder Member=Component btn_mode SW-PB
+Added Member To Class: ClassName=feeder Member=Component btn_plus SW-PB
+Added Member To Class: ClassName=feeder Member=Component btn_set SW-PB
+Added Member To Class: ClassName=feeder Member=Component R1 Res1
+Added Member To Class: ClassName=feeder Member=Component R2 Res1
+Added Member To Class: ClassName=feeder Member=Component R3 Res1
+Added Member To Class: ClassName=feeder Member=Component R4 Res1

@@ -1,0 +1,20 @@
+----------------------------------------------------------------------------------------------------------------------------------
+NCDrill File Report For: feeder.PcbDoc   6/28/2019  10:16:40 PM
+----------------------------------------------------------------------------------------------------------------------------------
+
+Layer Pair : Top Layer to Bottom Layer
+ASCII RoundHoles File : FEEDER.TXT
+
+Tool       Hole Size               Hole Tolerance               Hole Type       Hole Count   Plated         Tool Travel
+----------------------------------------------------------------------------------------------------------------------------------
+T1      20mil (0.508mm)                                           Round             21        PTH        3.87inch (98.29mm)
+T2      25mil (0.635mm)                                           Round             2         PTH        0.19inch (4.83mm)
+T3      30mil (0.762mm)                                           Round             4         PTH        0.34inch (8.51mm)
+T4      35mil (0.889mm)                                           Round             6         PTH        1.01inch (25.60mm)
+T5      35mil (0.9mm)                                             Round             31        PTH        6.79inch (172.49mm)
+T6      40mil (1.016mm)                                           Round             2         PTH        0.15inch (3.81mm)
+T7      125mil (3.175mm)                                          Round             4         PTH        4.77inch (121.16mm)
+----------------------------------------------------------------------------------------------------------------------------------
+Totals                                                                              70
+
+Total Processing Time (hh:mm:ss) : 00:00:00

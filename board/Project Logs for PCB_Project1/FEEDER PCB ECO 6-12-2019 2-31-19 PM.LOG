@@ -1,0 +1,8 @@
+Added Component: Designator=ICSP(HDR2X3_CEN)
+Added Pin To Net: NetName=NetICSP_1 Pin=ICSP-1
+Added Pin To Net: NetName=NetICSP_2 Pin=ICSP-2
+Added Pin To Net: NetName=NetICSP_3 Pin=ICSP-3
+Added Pin To Net: NetName=VCC Pin=ICSP-4
+Added Pin To Net: NetName=NetICSP_5 Pin=ICSP-5
+Added Pin To Net: NetName=GND Pin=ICSP-6
+Added Member To Class: ClassName=feeder Member=Component ICSP

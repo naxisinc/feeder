@@ -1,0 +1,14 @@
+Added Component: Designator=U0(TQFP_32_Atmega8a)
+Added Component: Designator=Y1(XTAL-2)
+Added Pin To Net: NetName=GND Pin=U0-3
+Added Pin To Net: NetName=VCC Pin=U0-4
+Added Pin To Net: NetName=GND Pin=U0-5
+Added Pin To Net: NetName=VCC Pin=U0-6
+Added Pin To Net: NetName=NetC8_2 Pin=U0-7
+Added Pin To Net: NetName=NetC7_2 Pin=U0-8
+Added Pin To Net: NetName=NetP11_5 Pin=U0-15
+Added Pin To Net: NetName=NetP11_1 Pin=U0-16
+Added Pin To Net: NetName=NetP11_2 Pin=U0-17
+Added Pin To Net: NetName=GND Pin=U0-21
+Added Pin To Net: NetName=NetP11_3 Pin=U0-29
+Added Member To Class: ClassName=feeder Member=Component U0 ATmega328P-AU

@@ -1,0 +1,5 @@
+Change Component Footprint: Designator=R1 Old Footprint=AXIAL-0.3 New Footprint=Cap1206_new
+Change Component Footprint: Designator=R2 Old Footprint=AXIAL-0.3 New Footprint=Cap1206_new
+Change Component Footprint: Designator=R3 Old Footprint=AXIAL-0.3 New Footprint=Cap1206_new
+Change Component Footprint: Designator=R4 Old Footprint=AXIAL-0.3 New Footprint=Cap1206_new
+Added Room: Name=feeder

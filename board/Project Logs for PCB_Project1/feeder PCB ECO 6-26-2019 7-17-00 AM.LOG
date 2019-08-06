@@ -1,0 +1,6 @@
+Removed Member From Class: ClassName=feeder Member=B2
+Removed Member From Class: ClassName=feeder Member=B3
+Removed Member From Class: ClassName=feeder Member=B4
+Added Component: Designator=S?(BUTTON)
+Added Member To Class: ClassName=feeder Member=Component S? SW-PB
+Added Room: Name=feeder

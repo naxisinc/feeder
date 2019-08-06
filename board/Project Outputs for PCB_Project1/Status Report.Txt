@@ -1,0 +1,12 @@
+Output: NC Drill Files
+Type  : NC Drill
+From  : Project [PCB_Project1.PrjPCB]
+   Generated File[FEEDER.TXT]
+   Generated File[FEEDER.LDP]
+   Generated File[FEEDER.DRR]
+
+
+Files Generated   : 3
+Documents Printed : 0
+
+Finished Output Generation At 10:16:40 PM On 6/28/2019

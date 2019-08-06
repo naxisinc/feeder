@@ -1,0 +1,4 @@
+Removed Member From Class: ClassName=feeder Member=S?
+Change Component Footprint: Designator=S? Old Footprint=DIP-4 New Footprint=BUTTON
+Change Component Designator: OldDesignator=S? NewDesignator=B1
+Added Member To Class: ClassName=feeder Member=Component B1 SW DIP-2

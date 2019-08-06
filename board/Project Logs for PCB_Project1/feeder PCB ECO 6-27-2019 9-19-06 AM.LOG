@@ -1,0 +1,4 @@
+Change Component Footprint: Designator=VR1 Old Footprint=D2PAK_N New Footprint=SOT-223B
+Change Component Footprint: Designator=C2 Old Footprint=RAD-0.3 New Footprint=C100_round
+Change Component Footprint: Designator=C1 Old Footprint=RB7.6-15 New Footprint=C100_round
+Added Room: Name=feeder
