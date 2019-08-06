@@ -33,7 +33,7 @@ bool setFlag = false; // variable para controlar el estado del set_btn
 bool HH_state, mm_state, feed_state = false;
 
 bool moveClockwise = true;
-byte degree = 360; // grados por feeding section
+byte degree = 270; // grados por feeding section
 
 // TIMER
 // Counter and compare values
@@ -43,7 +43,7 @@ const uint16_t t1_comp = 62499; // for a 16 MHz Crystal. 256 prescler
 bool setOnTime = false;           // indica si el clock fue setting or not
 byte hours, minutes, seconds = 0; // clock
 
-bool goneFlag = false; // para saber si paso un segundo entonces refresh the LCD
+bool secondGone, minuteGone = false; // si paso un segundo refresh the LCD, si paso un minuto check alerts
 
 // const byte led_pin = PB5; // just for testing purpose.
 
@@ -51,12 +51,8 @@ void setup()
 {
   // Save power setting all IO pins to LOW
   for (int i = 0; i < 20; i++)
-  {
     if (i != 4 || i != 5 || i != 6 || i != 7) // input pins of the buttons
-    {
       pinMode(i, OUTPUT);
-    }
-  }
 
   // setup timer interrupt
   cli(); //disable global interrupts
@@ -98,21 +94,16 @@ void setup()
 
 void loop()
 {
+  stepper.run(); // keep running the rest of code while motor is rotating
+
   // Apagando el backlight del LCD
   if ((millis() - backlightTimeOut) > interval)
-  {
     lcd.noBacklight(); // turn off backlight
-  }
-
-  stepper.run(); // keep running the rest of code while motor is rotating
 
   int stepsLeft = stepper.getStepsLeft(); // let's check how many steps are left in the current move:
   if (stepsLeft == 0)                     // if the current move is done...
-  {
-    // Set stepper motor pins to LOW
-    for (int i = 8; i < 12; i++)
+    for (int i = 8; i < 12; i++)          // Set stepper motor pins to LOW
       digitalWrite(i, LOW);
-  }
 
   if (setFlag || setOnTime) // para transmitir la sensacion de cuando estacontando y cuando no
     blink();                // indica donde esta el cursor
@@ -120,11 +111,8 @@ void loop()
   feedBtn_currState = digitalRead(feedBtn_pin);
   if (feedBtn_currState != feedBtn_prevState)
   {
-    if (feedBtn_currState == LOW)
-    {
-      // Direct feed
+    if (feedBtn_currState == LOW) // Direct feed
       stepper.newMoveDegrees(moveClockwise, degree);
-    }
   }
   feedBtn_prevState = feedBtn_currState;
 
@@ -181,7 +169,10 @@ void loop()
         mm_state = false;
         feed_state = false;
         if (viewId == 0)
+        {
+          seconds = 0;      // reset the clock
           setOnTime = true; // comienza a contar el tiempo al poner el clock en hora
+        }
       }
     }
   }
@@ -194,67 +185,74 @@ void loop()
     if (plusBtn_currState == LOW)
     {
       backlight_TurnOn();
-      if (HH_state) // Hour
+      if (viewId == 0) /* Fijando hora del reloj */
       {
-        if (viewId == 0) /* Fijando hora del reloj */
-        {
+        if (HH_state)
           hours = (hours < 23) ? hours + 1 : 0;
-          lcd.setCursor(11, 1);
-          if (hours < 10)
-            lcd.print("0");
-          lcd.print(hours);
-        }
-        else /* Fijando hora de la alarma 'x' */
+        else if (mm_state)
+          minutes = (minutes < 59) ? minutes + 1 : 0;
+        // lcdUpdate();
+      }
+      else /* Fijando feed alarms */
+      {
+        if (HH_state) // Hour
         {
           byte hour_byte = (viewId - 1) * 3; // hour_byte
           byte hh = EEPROM.read(hour_byte);
           byte hh_inc = (hh < 23) ? hh + 1 : 0;
           EEPROM.write(hour_byte, hh_inc); // actualiza la hora del feed_alarm en la EEPROM
-          lcd.setCursor(11, 1);
-          if (hh_inc < 10)
-            lcd.print("0");
-          lcd.print(hh_inc);
+          // lcdUpdate();
         }
-      }
-      else if (mm_state) // Minutes
-      {
-        if (viewId == 0) /* Fijando minuto del reloj */
-        {
-          minutes = (minutes < 59) ? minutes + 1 : 0;
-          lcd.setCursor(14, 1);
-          if (minutes < 10)
-            lcd.print("0");
-          lcd.print(minutes);
-        }
-        else /* Fijando minutos de la alarma 'x' */
+        else if (mm_state) // Minutes
         {
           byte minutes_byte = ((viewId - 1) * 3) + 1;
           byte mm = EEPROM.read(minutes_byte);
           byte mm_inc = (mm < 59) ? mm + 1 : 0;
           EEPROM.write(minutes_byte, mm_inc); // actualiza la hora del feed_alarm en la EEPROM
-          lcd.setCursor(14, 1);
-          if (mm_inc < 10)
-            lcd.print("0");
-          lcd.print(mm_inc);
+          // lcdUpdate();
+        }
+        else
+        {
+          // Qty of rotations
+          byte rotation_byte = ((viewId - 1) * 3) + 2;
+          byte rot = EEPROM.read(rotation_byte);
+          byte rot_inc = (rot < 2) ? rot + 1 : 0;
+          EEPROM.write(rotation_byte, rot_inc);
+          // lcdUpdate();
         }
       }
-      else
-      {
-        // Qty of rotations
-        byte rotation_byte = ((viewId - 1) * 3) + 2;
-        byte rot = EEPROM.read(rotation_byte);
-        byte rot_inc = (rot < 2) ? rot + 1 : 0;
-        EEPROM.write(rotation_byte, rot_inc);
-        lcd.setCursor(15, 0);
-        lcd.print(rot_inc);
-      }
+      lcdUpdate();
     }
   }
   plusBtn_prevState = plusBtn_currState;
 
-  if (goneFlag)
+  if (secondGone)
   {
     lcdUpdate();
-    goneFlag = false;
+    secondGone = false;
   }
+
+  if (minuteGone)
+  {
+    // Check the feed alarms
+    for (byte i = 1; i < 5; i++)
+    {
+      bool matchHour = false;
+      bool matchMinute = false;
+      byte rotNumPos = (i * 3) - 1; // posicion en EEPROM referente al numero de rotaciones
+      if (EEPROM.read(rotNumPos) == 0)
+        break;
+      if (EEPROM.read(rotNumPos - 1) == minutes)
+        matchMinute = true;
+      if (EEPROM.read(rotNumPos - 2) == hours)
+        matchHour = true;
+      if (matchHour && matchMinute)
+        stepper.newMoveDegrees(moveClockwise, degree * EEPROM.read(rotNumPos));
+    }
+    minuteGone = false;
+  }
+
+  /* Temp */
+  // lcd.setCursor(0, 0);
+  // lcd.print(seconds);
 }
