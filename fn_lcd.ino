@@ -6,34 +6,47 @@ void lcdInit()
 
 void lcdUpdate()
 {
-  // Feed rounds
-  if (posPointer > 0)
+  // Feed views
+  if (viewId > 0)
   {
+    byte start_address = (viewId - 1) * 3; // byte donde comenzare a leer
+
+    // Hour
+    lcd.setCursor(11, 1);
+    byte hh = EEPROM.read(start_address);
+    if (hh < 10)
+      lcd.print("0");
+    lcd.print(hh);
+
+    // Minutes
+    lcd.setCursor(14, 1);
+    byte mm = EEPROM.read(start_address + 1);
+    if (mm < 10)
+      lcd.print("0");
+    lcd.print(mm);
+
+    // Feed value
     lcd.setCursor(12, 0);
     lcd.print("F");
-    lcd.print(posPointer);
+    lcd.print(viewId);
     lcd.print(" ");
-    lcd.print(arr[posPointer][2]);
+    lcd.print(EEPROM.read(start_address + 2));
   }
-  else
+  else // clock view
   {
     lcd.setCursor(12, 0);
     lcd.print("    ");
-  }
 
-  // Hour
-  lcd.setCursor(11, 1);
-  if (arr[posPointer][0] < 10)
-  {
-    lcd.print("0");
-  }
-  lcd.print(arr[posPointer][0]);
+    // Hour
+    lcd.setCursor(11, 1);
+    if (hours < 10)
+      lcd.print("0");
+    lcd.print(hours);
 
-  // Minutes
-  lcd.setCursor(14, 1);
-  if (arr[posPointer][1] < 10)
-  {
-    lcd.print("0");
+    // Minutes
+    lcd.setCursor(14, 1);
+    if (minutes < 10)
+      lcd.print("0");
+    lcd.print(minutes);
   }
-  lcd.print(arr[posPointer][1]);
 }

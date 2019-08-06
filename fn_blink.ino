@@ -1,10 +1,10 @@
 void blink()
 {
-  if ((posPointer == 0) && (!HH_state && !mm_state && !feed_state))
+  if ((viewId == 0) && (!HH_state && !mm_state && !feed_state))
   {
     lcd.setCursor(13, 1);
   }
-  else if ((posPointer != 0) && (!HH_state && !mm_state && !feed_state))
+  else if ((viewId != 0) && (!HH_state && !mm_state && !feed_state))
   {
     lcd.noBlink();
     return;

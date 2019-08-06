@@ -11,7 +11,7 @@
 LiquidCrystal_I2C lcd(0x27, 20, 4); // set the LCD address to 0x27 for a 16 chars and 2 line display
 // Backlight Time Out
 unsigned long backlightTimeOut;
-const int interval = 15000; // 15 sec. on
+const int interval = 15000; // 15 sec. the backlight ON
 
 CheapStepper stepper(8, 9, 10, 11); // connect pins 8,9,10,11 to IN1,IN2,IN3,IN4 on ULN2003 board
 
@@ -27,24 +27,23 @@ byte plusBtn_currState, plusBtn_prevState = LOW;
 const int setBtn_pin = 7;
 byte setBtn_currState, setBtn_prevState = LOW;
 
-byte arr[5][3] = {0}; // row; col
-byte posPointer = 0;  // default position (current hour view)
-bool setFlag = false;
+byte viewId = 0;      // indica el identificador de la vista (clock, F1, F2, F3, F4)
+bool setFlag = false; // variable para controlar el estado del set_btn
 
 bool HH_state, mm_state, feed_state = false;
+
+bool moveClockwise = true;
+byte degree = 360; // grados por feeding section
 
 // TIMER
 // Counter and compare values
 const uint16_t t1_load = 0;
 const uint16_t t1_comp = 62499; // for a 16 MHz Crystal. 256 prescler
 
-bool timeSetFlag = false;
-byte seconds = 0; // seconds
+bool setOnTime = false;           // indica si el clock fue setting or not
+byte hours, minutes, seconds = 0; // clock
 
-bool moveClockwise = true;
-byte degree = 360; // grados por feeding section
-
-bool goneFlag = false; // saber si paso un segundo para refresh the LCD
+bool goneFlag = false; // para saber si paso un segundo entonces refresh the LCD
 
 // const byte led_pin = PB5; // just for testing purpose.
 
@@ -91,14 +90,10 @@ void setup()
 
   stepper.setRpm(12); // initialize RPM
 
-  /* Reading the EEPROM */
+  // Setting the EEPROM bytes
   for (byte i = 0; i < 12; i++)
-  {
-    if (EEPROM.read(i) != 255)
-    {
-      //
-    }
-  }
+    if (EEPROM.read(i) == 255) // Just one time
+      EEPROM.write(i, 0);
 }
 
 void loop()
@@ -119,8 +114,8 @@ void loop()
       digitalWrite(i, LOW);
   }
 
-  if (timeSetFlag)
-    blink(); // indica donde esta el cursor
+  if (setFlag || setOnTime) // para transmitir la sensacion de cuando estacontando y cuando no
+    blink();                // indica donde esta el cursor
 
   feedBtn_currState = digitalRead(feedBtn_pin);
   if (feedBtn_currState != feedBtn_prevState)
@@ -148,7 +143,7 @@ void loop()
           HH_state = false;
           mm_state = true;
         }
-        else if (mm_state && (posPointer != 0))
+        else if (mm_state && (viewId != 0))
         {
           mm_state = false;
           feed_state = true;
@@ -163,7 +158,7 @@ void loop()
       else
       {
         // desplazate a la siguiente section
-        posPointer = posPointer < 4 ? posPointer + 1 : 0;
+        viewId = viewId < 4 ? viewId + 1 : 0;
         lcdUpdate();
       }
     }
@@ -178,32 +173,15 @@ void loop()
     {
       backlight_TurnOn();
       setFlag = !setFlag;
-      if (setFlag)
-      {
+      if (setFlag) // dale el foco a la hora
         HH_state = true;
-      }
-      else
+      else // reloj o feed time fue configurado
       {
         HH_state = false;
         mm_state = false;
         feed_state = false;
-        /* Si lo que fijo fue la hora del dispositivo */
-        if (posPointer == 0)
-        {
-          timeSetFlag = true; // comienza a contar el tiempo
-        }
-        /* Sino, entonces lo que fijo fue un feed time */
-        else
-        {
-          // escribo la EEPROM solo si feed_value != 0
-          if (arr[posPointer][2] != 0)
-          {
-            byte pos = 0;                              // position in arr array
-            byte start_address = (posPointer - 1) * 3; // byte donde comenzare a escribir
-            for (int i = start_add; i < start_address + 3; i++)
-              EEPROM.write(i, arr[posPointer][pos++]);
-          }
-        }
+        if (viewId == 0)
+          setOnTime = true; // comienza a contar el tiempo al poner el clock en hora
       }
     }
   }
@@ -216,30 +194,59 @@ void loop()
     if (plusBtn_currState == LOW)
     {
       backlight_TurnOn();
-      if (HH_state)
+      if (HH_state) // Hour
       {
-        // Hour
-        arr[posPointer][0] = (arr[posPointer][0] < 23) ? arr[posPointer][0] + 1 : 0;
-        lcd.setCursor(11, 1);
-        if (arr[posPointer][0] < 10)
-          lcd.print("0");
-        lcd.print(arr[posPointer][0]);
+        if (viewId == 0) /* Fijando hora del reloj */
+        {
+          hours = (hours < 23) ? hours + 1 : 0;
+          lcd.setCursor(11, 1);
+          if (hours < 10)
+            lcd.print("0");
+          lcd.print(hours);
+        }
+        else /* Fijando hora de la alarma 'x' */
+        {
+          byte hour_byte = (viewId - 1) * 3; // hour_byte
+          byte hh = EEPROM.read(hour_byte);
+          byte hh_inc = (hh < 23) ? hh + 1 : 0;
+          EEPROM.write(hour_byte, hh_inc); // actualiza la hora del feed_alarm en la EEPROM
+          lcd.setCursor(11, 1);
+          if (hh_inc < 10)
+            lcd.print("0");
+          lcd.print(hh_inc);
+        }
       }
-      else if (mm_state)
+      else if (mm_state) // Minutes
       {
-        // Minutes
-        arr[posPointer][1] = (arr[posPointer][1] < 59) ? arr[posPointer][1] + 1 : 0;
-        lcd.setCursor(14, 1);
-        if (arr[posPointer][1] < 10)
-          lcd.print("0");
-        lcd.print(arr[posPointer][1]);
+        if (viewId == 0) /* Fijando minuto del reloj */
+        {
+          minutes = (minutes < 59) ? minutes + 1 : 0;
+          lcd.setCursor(14, 1);
+          if (minutes < 10)
+            lcd.print("0");
+          lcd.print(minutes);
+        }
+        else /* Fijando minutos de la alarma 'x' */
+        {
+          byte minutes_byte = ((viewId - 1) * 3) + 1;
+          byte mm = EEPROM.read(minutes_byte);
+          byte mm_inc = (mm < 59) ? mm + 1 : 0;
+          EEPROM.write(minutes_byte, mm_inc); // actualiza la hora del feed_alarm en la EEPROM
+          lcd.setCursor(14, 1);
+          if (mm_inc < 10)
+            lcd.print("0");
+          lcd.print(mm_inc);
+        }
       }
       else
       {
         // Qty of rotations
-        arr[posPointer][2] = (arr[posPointer][2] < 2) ? arr[posPointer][2] + 1 : 0;
+        byte rotation_byte = ((viewId - 1) * 3) + 2;
+        byte rot = EEPROM.read(rotation_byte);
+        byte rot_inc = (rot < 2) ? rot + 1 : 0;
+        EEPROM.write(rotation_byte, rot_inc);
         lcd.setCursor(15, 0);
-        lcd.print(arr[posPointer][2]);
+        lcd.print(rot_inc);
       }
     }
   }

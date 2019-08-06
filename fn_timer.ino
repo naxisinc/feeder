@@ -1,27 +1,27 @@
 ISR(TIMER1_COMPA_vect)
 {
   // PORTB ^= (1 << led_pin);
-  if (timeSetFlag)
+  if (setOnTime)
   {
     seconds++;
     if (seconds > 59)
     {
       seconds = 0;
-      arr[0][1]++; // inc minutes
-      if (arr[0][1] > 59)
+      minutes++; // inc minutes
+      if (minutes > 59)
       {
-        arr[0][1] = 0;
-        arr[0][0]++; // inc hours
-        if (arr[0][0] > 23)
+        minutes = 0;
+        hours++; // inc hours
+        if (hours > 23)
         {
-          arr[0][0] = 0;
+          hours = 0;
         }
       }
 
-      // Check the feed secondstions arr
+      // Check the feed alarms
       for (int i = 1; i < 5; i++)
       {
-        if ((arr[i][2] > 0) && (arr[0][0] == arr[i][0]) && (arr[0][1] == arr[i][1]))
+        if ((arr[i][2] > 0) && (hours == arr[i][0]) && (minutes == arr[i][1]))
         {
           // Feeding n-times
           stepper.newMoveDegrees(moveClockwise, degree * arr[i][2]);
