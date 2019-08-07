@@ -15,10 +15,8 @@ ISR(TIMER1_COMPA_vect)
         if (hours > 23)
           hours = 0;
       }
-      // indica q paso un minuto y debo chequear si alguna alarm match
+      // indica q paso un minuto y debo chequear si alguna alarm match ademas de refrescar el display
       minuteGone = true;
     }
-    // indica q paso un segundo y debe ser refresh el display
-    secondGone = true;
   }
 }

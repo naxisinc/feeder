@@ -3,10 +3,10 @@
 #include <CheapStepper.h>
 #include <EEPROM.h>
 
-#ifdef F_CPU
+/* #ifdef F_CPU
 #undef F_CPU
 #define F_CPU 16000000L
-#endif
+#endif */
 
 LiquidCrystal_I2C lcd(0x27, 20, 4); // set the LCD address to 0x27 for a 16 chars and 2 line display
 // Backlight Time Out
@@ -32,8 +32,9 @@ bool setFlag = false; // variable para controlar el estado del set_btn
 
 bool HH_state, mm_state, feed_state = false;
 
+byte rotations = 0; // para almacenar el numero de rotaciones async
 bool moveClockwise = true;
-byte degree = 270; // grados por feeding section
+word degrees = 360; // grados q va a rotar el tambor
 
 // TIMER
 // Counter and compare values
@@ -43,7 +44,7 @@ const uint16_t t1_comp = 62499; // for a 16 MHz Crystal. 256 prescler
 bool setOnTime = false;           // indica si el clock fue setting or not
 byte hours, minutes, seconds = 0; // clock
 
-bool secondGone, minuteGone = false; // si paso un segundo refresh the LCD, si paso un minuto check alerts
+bool minuteGone = false; // cada 1 min. refresh the LCD and check the feeder alarms
 
 // const byte led_pin = PB5; // just for testing purpose.
 
@@ -102,18 +103,25 @@ void loop()
 
   int stepsLeft = stepper.getStepsLeft(); // let's check how many steps are left in the current move:
   if (stepsLeft == 0)                     // if the current move is done...
-    for (int i = 8; i < 12; i++)          // Set stepper motor pins to LOW
-      digitalWrite(i, LOW);
+  {
+    if (rotations > 0)
+    {
+      stepper.newMoveDegrees(moveClockwise, degrees);
+      rotations--;
+    }
+    else
+      for (int i = 8; i < 12; i++) // Set stepper motor pins to LOW pq ya termino de rotar
+        digitalWrite(i, LOW);
+  }
 
-  if (setFlag || setOnTime) // para transmitir la sensacion de cuando estacontando y cuando no
+  if (setFlag || setOnTime) // para transmitir la sensacion de cuando esta contando y cuando no
     blink();                // indica donde esta el cursor
 
+  // Direct feed
   feedBtn_currState = digitalRead(feedBtn_pin);
   if (feedBtn_currState != feedBtn_prevState)
-  {
-    if (feedBtn_currState == LOW) // Direct feed
-      stepper.newMoveDegrees(moveClockwise, degree);
-  }
+    if (feedBtn_currState == LOW)
+      stepper.newMoveDegrees(moveClockwise, degrees);
   feedBtn_prevState = feedBtn_currState;
 
   // Mode Button
@@ -191,7 +199,6 @@ void loop()
           hours = (hours < 23) ? hours + 1 : 0;
         else if (mm_state)
           minutes = (minutes < 59) ? minutes + 1 : 0;
-        // lcdUpdate();
       }
       else /* Fijando feed alarms */
       {
@@ -201,7 +208,6 @@ void loop()
           byte hh = EEPROM.read(hour_byte);
           byte hh_inc = (hh < 23) ? hh + 1 : 0;
           EEPROM.write(hour_byte, hh_inc); // actualiza la hora del feed_alarm en la EEPROM
-          // lcdUpdate();
         }
         else if (mm_state) // Minutes
         {
@@ -209,16 +215,13 @@ void loop()
           byte mm = EEPROM.read(minutes_byte);
           byte mm_inc = (mm < 59) ? mm + 1 : 0;
           EEPROM.write(minutes_byte, mm_inc); // actualiza la hora del feed_alarm en la EEPROM
-          // lcdUpdate();
         }
-        else
+        else // Qty of rotations
         {
-          // Qty of rotations
           byte rotation_byte = ((viewId - 1) * 3) + 2;
           byte rot = EEPROM.read(rotation_byte);
           byte rot_inc = (rot < 2) ? rot + 1 : 0;
           EEPROM.write(rotation_byte, rot_inc);
-          // lcdUpdate();
         }
       }
       lcdUpdate();
@@ -226,33 +229,27 @@ void loop()
   }
   plusBtn_prevState = plusBtn_currState;
 
-  if (secondGone)
+  if (minuteGone) // Check the feed alarms
   {
     lcdUpdate();
-    secondGone = false;
-  }
-
-  if (minuteGone)
-  {
-    // Check the feed alarms
     for (byte i = 1; i < 5; i++)
     {
       bool matchHour = false;
       bool matchMinute = false;
       byte rotNumPos = (i * 3) - 1; // posicion en EEPROM referente al numero de rotaciones
-      if (EEPROM.read(rotNumPos) == 0)
+      byte rotValue = EEPROM.read(rotNumPos);
+      if (rotValue == 0)
         break;
       if (EEPROM.read(rotNumPos - 1) == minutes)
         matchMinute = true;
       if (EEPROM.read(rotNumPos - 2) == hours)
         matchHour = true;
-      if (matchHour && matchMinute)
-        stepper.newMoveDegrees(moveClockwise, degree * EEPROM.read(rotNumPos));
+      if (matchHour && matchMinute) // rota el numero de veces n
+      {
+        stepper.newMoveDegrees(moveClockwise, degrees);
+        rotations = rotValue - 1; // pq ya rotaste en la linea anterior
+      }
     }
     minuteGone = false;
   }
-
-  /* Temp */
-  // lcd.setCursor(0, 0);
-  // lcd.print(seconds);
 }
