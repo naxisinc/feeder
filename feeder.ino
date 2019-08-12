@@ -11,6 +11,7 @@
 LiquidCrystal_I2C lcd(0x27, 20, 4); // set the LCD address to 0x27 for a 16 chars and 2 line display
 // Backlight Time Out
 unsigned long backlightTimeOut;
+bool lcdIsOff = false;      // saber si el backlight is turn off
 const int interval = 15000; // 15 sec. the backlight ON
 
 CheapStepper stepper(8, 9, 10, 11); // connect pins 8,9,10,11 to IN1,IN2,IN3,IN4 on ULN2003 board
@@ -41,7 +42,6 @@ word degrees = 360; // grados q va a rotar el tambor
 const uint16_t t1_load = 0;
 const uint16_t t1_comp = 62499; // for a 16 MHz Crystal. 256 prescler
 
-bool setOnTime = false;           // indica si el clock fue setting or not
 byte hours, minutes, seconds = 0; // clock
 
 bool minuteGone = false; // cada 1 min. refresh the LCD and check the feeder alarms
@@ -95,11 +95,14 @@ void setup()
 
 void loop()
 {
-  stepper.run(); // keep running the rest of code while motor is rotating
-
   // Apagando el backlight del LCD
   if ((millis() - backlightTimeOut) > interval)
+  {
+    lcdIsOff = true;   // acrualizo backlight status
     lcd.noBacklight(); // turn off backlight
+  }
+
+  stepper.run(); // keep running the rest of code while motor is rotating
 
   int stepsLeft = stepper.getStepsLeft(); // let's check how many steps are left in the current move:
   if (stepsLeft == 0)                     // if the current move is done...
@@ -114,8 +117,7 @@ void loop()
         digitalWrite(i, LOW);
   }
 
-  if (setFlag || setOnTime) // para transmitir la sensacion de cuando esta contando y cuando no
-    blink();                // indica donde esta el cursor
+  blink(); // indica donde esta el cursor
 
   // Direct feed
   feedBtn_currState = digitalRead(feedBtn_pin);
@@ -177,10 +179,7 @@ void loop()
         mm_state = false;
         feed_state = false;
         if (viewId == 0)
-        {
-          seconds = 0;      // reset the clock
-          setOnTime = true; // comienza a contar el tiempo al poner el clock en hora
-        }
+          seconds = 0; // reset the seconds
       }
     }
   }
@@ -231,6 +230,8 @@ void loop()
 
   if (minuteGone) // Check the feed alarms
   {
+    if (lcdIsOff)
+      viewId = 0;
     lcdUpdate();
     for (byte i = 1; i < 5; i++)
     {
