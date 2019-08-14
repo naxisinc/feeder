@@ -36,6 +36,7 @@ bool HH_state, mm_state, feed_state = false;
 byte rotations = 0; // para almacenar el numero de rotaciones async
 bool moveClockwise = true;
 word degrees = 360; // grados q va a rotar el tambor
+bool fixDegreesFlag = false;
 
 // TIMER
 // Counter and compare values
@@ -98,7 +99,7 @@ void loop()
   // Apagando el backlight del LCD
   if ((millis() - backlightTimeOut) > interval)
   {
-    lcdIsOff = true;   // acrualizo backlight status
+    lcdIsOff = true;   // actualizo backlight status
     lcd.noBacklight(); // turn off backlight
   }
 
@@ -159,7 +160,11 @@ void loop()
         viewId = viewId < 4 ? viewId + 1 : 0;
         lcdUpdate();
       }
+      // btn mode sale de un posible modo fixDegree
+      fixDegreesFlag = false;
     }
+    else
+      fixDegreesFlag = true; // btn mode entra en modo fixDegree
   }
   modeBtn_prevState = modeBtn_currState;
 
@@ -192,35 +197,40 @@ void loop()
     if (plusBtn_currState == LOW)
     {
       backlight_TurnOn();
-      if (viewId == 0) /* Fijando hora del reloj */
+      if (fixDegreesFlag)
+        stepper.newMoveDegrees(moveClockwise, 2);
+      else
       {
-        if (HH_state)
-          hours = (hours < 23) ? hours + 1 : 0;
-        else if (mm_state)
-          minutes = (minutes < 59) ? minutes + 1 : 0;
-      }
-      else /* Fijando feed alarms */
-      {
-        if (HH_state) // Hour
+        if (viewId == 0) /* Fijando hora del reloj */
         {
-          byte hour_byte = (viewId - 1) * 3; // hour_byte
-          byte hh = EEPROM.read(hour_byte);
-          byte hh_inc = (hh < 23) ? hh + 1 : 0;
-          EEPROM.write(hour_byte, hh_inc); // actualiza la hora del feed_alarm en la EEPROM
+          if (HH_state)
+            hours = (hours < 23) ? hours + 1 : 0;
+          else if (mm_state)
+            minutes = (minutes < 59) ? minutes + 1 : 0;
         }
-        else if (mm_state) // Minutes
+        else /* Fijando feed alarms */
         {
-          byte minutes_byte = ((viewId - 1) * 3) + 1;
-          byte mm = EEPROM.read(minutes_byte);
-          byte mm_inc = (mm < 59) ? mm + 1 : 0;
-          EEPROM.write(minutes_byte, mm_inc); // actualiza la hora del feed_alarm en la EEPROM
-        }
-        else // Qty of rotations
-        {
-          byte rotation_byte = ((viewId - 1) * 3) + 2;
-          byte rot = EEPROM.read(rotation_byte);
-          byte rot_inc = (rot < 2) ? rot + 1 : 0;
-          EEPROM.write(rotation_byte, rot_inc);
+          if (HH_state) // Hour
+          {
+            byte hour_byte = (viewId - 1) * 3; // hour_byte
+            byte hh = EEPROM.read(hour_byte);
+            byte hh_inc = (hh < 23) ? hh + 1 : 0;
+            EEPROM.write(hour_byte, hh_inc); // actualiza la hora del feed_alarm en la EEPROM
+          }
+          else if (mm_state) // Minutes
+          {
+            byte minutes_byte = ((viewId - 1) * 3) + 1;
+            byte mm = EEPROM.read(minutes_byte);
+            byte mm_inc = (mm < 59) ? mm + 1 : 0;
+            EEPROM.write(minutes_byte, mm_inc); // actualiza la hora del feed_alarm en la EEPROM
+          }
+          else // Qty of rotations
+          {
+            byte rotation_byte = ((viewId - 1) * 3) + 2;
+            byte rot = EEPROM.read(rotation_byte);
+            byte rot_inc = (rot < 2) ? rot + 1 : 0;
+            EEPROM.write(rotation_byte, rot_inc);
+          }
         }
       }
       lcdUpdate();
