@@ -11,7 +11,7 @@
 LiquidCrystal_I2C lcd(0x27, 20, 4); // set the LCD address to 0x27 for a 16 chars and 2 line display
 // Backlight Time Out
 unsigned long backlightTimeOut;
-bool lcdIsOff = false;      // saber si el backlight is turn off
+bool lcdIsOn = true;        // saber si el backlight is turn on
 const int interval = 15000; // 15 sec. the backlight ON
 
 CheapStepper stepper(8, 9, 10, 11); // connect pins 8,9,10,11 to IN1,IN2,IN3,IN4 on ULN2003 board
@@ -35,8 +35,10 @@ bool HH_state, mm_state, feed_state = false;
 
 byte rotations = 0; // para almacenar el numero de rotaciones async
 bool moveClockwise = true;
-word degrees = 360; // grados q va a rotar el tambor
-bool fixDegreesFlag = false;
+word degrees = 360;             // grados q va a rotar el tambor
+byte fixDegrees = 5;            // grados a rotar para corregir el zero del rotor
+bool modeBtnKeepPushed = false; // indica si el btn mode se mantiene o no pushed
+bool fixedFlag = false;         // indica si hubo correcciones en el angulo del rotor
 
 // TIMER
 // Counter and compare values
@@ -97,10 +99,14 @@ void setup()
 void loop()
 {
   // Apagando el backlight del LCD
-  if ((millis() - backlightTimeOut) > interval)
+  if ((millis() - backlightTimeOut) > interval && lcdIsOn)
   {
-    lcdIsOff = true;   // actualizo backlight status
+    viewId = 0;
+    setFlag = false;
+    HH_state = mm_state = feed_state = false;
     lcd.noBacklight(); // turn off backlight
+    lcdIsOn = false;   // actualizo backlight status
+    lcdUpdate();       // actualizo el lcd display
   }
 
   stepper.run(); // keep running the rest of code while motor is rotating
@@ -131,40 +137,44 @@ void loop()
   modeBtn_currState = digitalRead(modeBtn_pin);
   if (modeBtn_currState != modeBtn_prevState)
   {
-    if (modeBtn_currState == LOW)
+    if (modeBtn_currState == LOW) // release
     {
-      backlight_TurnOn();
-      if (setFlag)
+      if (fixedFlag) // btn mode sale del modo fix
+        fixedFlag = false;
+      else
       {
-        // desplazate en la misma section
-        if (HH_state)
+        backlight_TurnOn();
+        if (setFlag)
         {
-          HH_state = false;
-          mm_state = true;
-        }
-        else if (mm_state && (viewId != 0))
-        {
-          mm_state = false;
-          feed_state = true;
+          // desplazate en la misma section
+          if (HH_state)
+          {
+            HH_state = false;
+            mm_state = true;
+          }
+          else if (mm_state && (viewId != 0))
+          {
+            mm_state = false;
+            feed_state = true;
+          }
+          else
+          {
+            HH_state = true;
+            mm_state = false;
+            feed_state = false;
+          }
         }
         else
         {
-          HH_state = true;
-          mm_state = false;
-          feed_state = false;
+          // desplazate a la siguiente section
+          viewId = viewId < 4 ? viewId + 1 : 0;
+          lcdUpdate();
         }
       }
-      else
-      {
-        // desplazate a la siguiente section
-        viewId = viewId < 4 ? viewId + 1 : 0;
-        lcdUpdate();
-      }
-      // btn mode sale de un posible modo fixDegree
-      fixDegreesFlag = false;
+      modeBtnKeepPushed = false;
     }
-    else
-      fixDegreesFlag = true; // btn mode entra en modo fixDegree
+    else                        // keep pushed
+      modeBtnKeepPushed = true; // btn mode entra en modo fixDegree
   }
   modeBtn_prevState = modeBtn_currState;
 
@@ -192,15 +202,18 @@ void loop()
 
   // Plus Button
   plusBtn_currState = digitalRead(plusBtn_pin);
-  if ((plusBtn_currState != plusBtn_prevState) && (HH_state || mm_state || feed_state))
+  if (plusBtn_currState != plusBtn_prevState)
   {
     if (plusBtn_currState == LOW)
     {
-      backlight_TurnOn();
-      if (fixDegreesFlag)
-        stepper.newMoveDegrees(moveClockwise, 2);
-      else
+      if (modeBtnKeepPushed)
       {
+        fixedFlag = true;
+        stepper.newMoveDegrees(moveClockwise, fixDegrees); // correcting rotor position
+      }
+      else if (HH_state || mm_state || feed_state)
+      {
+        backlight_TurnOn();
         if (viewId == 0) /* Fijando hora del reloj */
         {
           if (HH_state)
@@ -232,17 +245,18 @@ void loop()
             EEPROM.write(rotation_byte, rot_inc);
           }
         }
+        lcdUpdate();
       }
-      lcdUpdate();
     }
   }
   plusBtn_prevState = plusBtn_currState;
 
-  if (minuteGone) // Check the feed alarms
+  // Check the feed alarms
+  if (minuteGone)
   {
-    if (lcdIsOff)
-      viewId = 0;
-    lcdUpdate();
+    lcdUpdate(); // inc. the minutes in the LCD display
+
+    // Verifica si algun feed alert matchea
     for (byte i = 1; i < 5; i++)
     {
       bool matchHour = false;
@@ -261,6 +275,7 @@ void loop()
         rotations = rotValue - 1; // pq ya rotaste en la linea anterior
       }
     }
+    // paso un minuto
     minuteGone = false;
   }
 }
